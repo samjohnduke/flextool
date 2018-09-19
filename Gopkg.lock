@@ -10,6 +10,14 @@
   version = "v1.4.7"
 
 [[projects]]
+  digest = "1:c6ae060034c8ea83319767d9ce4de2c58b15bb7b3f628c49ec7ae025d35c62b6"
+  name = "github.com/go-cmd/cmd"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "b84ca4f2247327f07f46331c260675cba1a1dc7a"
+  version = "v1.0.3"
+
+[[projects]]
   digest = "1:c0d19ab64b32ce9fe5cf4ddceba78d5bc9807f0016db6b1183599da3dcc24d10"
   name = "github.com/hashicorp/hcl"
   packages = [
@@ -146,6 +154,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/go-cmd/cmd",
     "github.com/spf13/cobra",
     "github.com/spf13/viper",
   ]
