@@ -3,28 +3,28 @@ package archive
 import (
 	"fmt"
 	"log"
+	"path"
+	"time"
 
+	"github.com/pkg/errors"
 	"github.com/samjohnduke/flextool/shared"
 )
 
-var CMD = "pg_dump"
+var cmdAll = "pg_dumpall"
+var cmdOne = "pg_dump"
 
 type PostgreSQL struct {
-	Host     string
-	Port     string
 	Username string
-	Password string
-
-	Options []string
-	Out     string
-
-	DB string
+	Options  []string
+	Path     string
+	All      bool
+	DB       string
 }
 
 func (p *PostgreSQL) Archive() (*Archive, error) {
 	ar := &Archive{}
 
-	logs := make(chan string, 100)
+	logs := make(chan string)
 	go func() {
 		for s := range logs {
 			log.Println(s)
@@ -32,15 +32,30 @@ func (p *PostgreSQL) Archive() (*Archive, error) {
 	}()
 
 	opts := p.opts()
-	status, err := shared.Exec(logs, CMD, opts...)
+	name := fmt.Sprintf("pgbackup-all-%v.sql.tar.gz", time.Now().Unix())
+	path := path.Join(p.Path, name)
+
+	opts = append(opts, fmt.Sprintf(`-f%v`, path))
+
+	cmd := cmdAll
+	if !p.All {
+		cmd = cmdOne
+	}
+
+	status, err := shared.Exec(logs, cmd, opts...)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 
-	ar.Path = p.Out
+	if len(status.Stderr) > 0 {
+		return nil, errors.New("Error with script")
+	}
+
+	ar.Path = path
 	ar.MIME = "application/x-tar"
 
-	log.Printf(`Backup of database %s completed in: %f`, p.DB, status.Runtime)
+	log.Printf(`Backup of database %s completed in: %f`, "all", status.Runtime)
 
 	return ar, err
 }
@@ -51,9 +66,11 @@ func (p *PostgreSQL) Restore(ar *Archive) error {
 
 func (p *PostgreSQL) opts() []string {
 	options := p.Options
-	options = append(options, fmt.Sprintf(`-d%v`, p.DB))
-	options = append(options, fmt.Sprintf(`-h%v`, p.Host))
-	options = append(options, fmt.Sprintf(`-p%v`, p.Port))
+
+	if !p.All {
+		options = append(options, "-Fc")
+	}
+
 	options = append(options, fmt.Sprintf(`-U%v`, p.Username))
 	return options
 }
