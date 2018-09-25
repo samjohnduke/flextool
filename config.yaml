@@ -1,5 +1,3 @@
 PG:
   username: sam
   path: /home/sam
-  db: ""
-  all: true

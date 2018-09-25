@@ -6,7 +6,7 @@ to agents and running tasks.
 
 ## C&C
 
-The command and control component is used by agents as a registration and central 
+The command and control component is used by agents as a registration and central
 authority server for storing logs and others.
 
 ## Agent
@@ -19,4 +19,4 @@ The agent is used for performing a bunch of tasks on the server. The core tasks 
 
 ## CLI
 
-Used for interacting with the Agents and the C&C server 
+Used for interacting with the Agents and the C&C server
