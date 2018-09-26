@@ -3,9 +3,6 @@ package cmd
 import (
 	"log"
 
-	"github.com/shirou/gopsutil/host"
-	"github.com/shirou/gopsutil/mem"
-
 	"github.com/shirou/gopsutil/load"
 	"github.com/spf13/cobra"
 )
@@ -24,15 +21,5 @@ var statsCmd = &cobra.Command{
 		}
 
 		log.Println(stat)
-
-		// ts, _ := host.SensorsTemperatures()
-		// for _, t := range ts {
-		// 	log.Println(t)
-		// }
-
-		log.Println(host.Virtualization())
-
-		log.Println(mem.SwapMemory())
-		log.Println(mem.VirtualMemory())
 	},
 }
