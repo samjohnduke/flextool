@@ -11,9 +11,17 @@ import (
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "", "", "absolute path to config")
+
+	rootCmd.PersistentFlags().StringVar(&doAK, "do_access_key", "", "Access key for digital ocean spaces")
+	rootCmd.PersistentFlags().StringVar(&doSK, "do_secret_key", "", "Secret key for digital ocean spaces")
+	rootCmd.PersistentFlags().StringVar(&doRegion, "do_region", "", "Region for digital ocean spaces")
 }
 
 var cfgFile string
+
+var doAK string
+var doSK string
+var doRegion string
 
 var rootCmd = &cobra.Command{
 	Use:   "flextool",
