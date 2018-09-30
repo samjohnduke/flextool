@@ -15,6 +15,23 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&doAK, "do_access_key", "", "Access key for digital ocean spaces")
 	rootCmd.PersistentFlags().StringVar(&doSK, "do_secret_key", "", "Secret key for digital ocean spaces")
 	rootCmd.PersistentFlags().StringVar(&doRegion, "do_region", "", "Region for digital ocean spaces")
+	rootCmd.PersistentFlags().StringVar(&doBucket, "do_bucket", "", "Bucket for digital ocean spaces")
+
+	if !rootCmd.PersistentFlags().Changed("do_access_key") {
+		viper.Set("do_spaces.access_key", doAK)
+	}
+
+	if !rootCmd.PersistentFlags().Changed("do_secret_key") {
+		viper.Set("do_spaces.secret_key", doSK)
+	}
+
+	if !rootCmd.PersistentFlags().Changed("do_region") {
+		viper.Set("do_spaces.region", doRegion)
+	}
+
+	if !rootCmd.PersistentFlags().Changed("do_bucket") {
+		viper.Set("do_spaces.bucket", doBucket)
+	}
 }
 
 var cfgFile string
@@ -22,6 +39,7 @@ var cfgFile string
 var doAK string
 var doSK string
 var doRegion string
+var doBucket string
 
 var rootCmd = &cobra.Command{
 	Use:   "flextool",

@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"log"
-	"path"
 	"strings"
 
 	"github.com/samjohnduke/flextool/storage"
@@ -12,15 +12,12 @@ import (
 )
 
 func init() {
-	fileCmd.AddCommand(listCmd)
-	listCmd.PersistentFlags().BoolVarP(&recursive, "recursive", "r", false, "recursively search for file")
+	fileCmd.AddCommand(statCmd)
 }
 
-var recursive bool
-
-var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "show all the files in the application",
+var statCmd = &cobra.Command{
+	Use:   "stat",
+	Short: "get stat information for a file",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		root := args[0]
@@ -53,15 +50,11 @@ var listCmd = &cobra.Command{
 			panic(err)
 		}
 
-		files, err := fs.List(context.Background(), p, storage.ListOpts{
-			Recursive: recursive,
-		})
+		stat, err := fs.Stat(context.Background(), p)
 		if err != nil {
 			panic(err)
 		}
 
-		for _, r := range files {
-			log.Println(path.Join(r.Path(), r.Name()))
-		}
+		fmt.Printf("%+v\n", stat)
 	},
 }
