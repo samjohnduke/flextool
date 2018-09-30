@@ -18,9 +18,19 @@ type Filesystem struct {
 }
 
 type File struct {
-	name  string
-	path  string
-	isDir bool
+	name   string
+	path   string
+	isDir  bool
+	loaded bool
+}
+
+func NewFile(name string) *File {
+	dir, n := path.Split(name)
+
+	return &File{
+		path: dir,
+		name: n,
+	}
 }
 
 func (f *File) Name() string {
@@ -33,6 +43,10 @@ func (f *File) Path() string {
 
 func (f *File) IsDir() bool {
 	return f.isDir
+}
+
+func (f *File) Exists() bool {
+	return false
 }
 
 func (f *File) Stat() (*Stat, error) {
@@ -61,8 +75,16 @@ func (f *File) Stat() (*Stat, error) {
 	return stat, nil
 }
 
-func (f *File) Reader() (io.Reader, error) {
-	return nil, nil
+func (f *File) Read(p []byte) (n int, err error) {
+	return 0, nil
+}
+
+func (f *File) Write(p []byte) (n int, err error) {
+	return 0, nil
+}
+
+func (f *File) Close() error {
+	return nil
 }
 
 func NewFilesystem(root string) (Store, error) {
@@ -71,6 +93,13 @@ func NewFilesystem(root string) (Store, error) {
 	}
 
 	return store, nil
+}
+
+func (store *Filesystem) New(ctx context.Context, name string) Blob {
+	f := NewFile(name)
+	f.Stat()
+
+	return f
 }
 
 func (store *Filesystem) List(ctx context.Context, prefix string, opts ListOpts) (Blobs, error) {
@@ -129,29 +158,15 @@ func (store *Filesystem) listTree(ctx context.Context, prefix string, opts ListO
 }
 
 func (store *Filesystem) Stat(ctx context.Context, name string) (*Stat, error) {
-	dir, n := path.Split(name)
-
-	f := File{
-		path: dir,
-		name: n,
-	}
-
+	f := store.New(ctx, name)
 	return f.Stat()
 }
 
-func (store *Filesystem) Put(ctx context.Context, name string, data io.ReadCloser) error {
+func (store *Filesystem) Put(ctx context.Context, name string, blob Blob) error {
 	return nil
 }
 
-func (store *Filesystem) Get(ctx context.Context, name string) (io.Reader, error) {
-	return nil, nil
-}
-
-func (store *Filesystem) Sync(ctx context.Context, from Blob, to string, opts SyncOpts) error {
-	return nil
-}
-
-func (store *Filesystem) SyncList(ctx context.Context, list Blobs, to string, opts SyncListOpts) error {
+func (store *Filesystem) Get(ctx context.Context, name string, blob Blob) error {
 	return nil
 }
 

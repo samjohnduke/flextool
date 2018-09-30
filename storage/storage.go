@@ -9,10 +9,9 @@ import (
 type Store interface {
 	List(ctx context.Context, path string, opts ListOpts) (Blobs, error)
 	Stat(ctx context.Context, name string) (*Stat, error)
-	Put(ctx context.Context, name string, data io.ReadCloser) error
-	Get(ctx context.Context, name string) (io.Reader, error)
-	Sync(ctx context.Context, from Blob, to string, opts SyncOpts) error
-	SyncList(ctx context.Context, list Blobs, to string, opts SyncListOpts) error
+	New(ctx context.Context, name string) Blob
+	Put(ctx context.Context, name string, out Blob) error
+	Get(ctx context.Context, name string, in Blob) error
 	Delete(ctx context.Context, name string) error
 	Move(ctx context.Context, name string, to string) error
 }
@@ -31,8 +30,10 @@ type Blob interface {
 	Name() string
 	Path() string
 	IsDir() bool
+	Exists() bool
 	Stat() (*Stat, error)
-	Reader() (io.Reader, error)
+
+	io.ReadWriteCloser
 }
 
 type Blobs map[string]Blob

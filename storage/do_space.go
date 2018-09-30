@@ -40,6 +40,13 @@ func NewDOSpace(accessKey, secretKey, region, space string, secure bool) (Store,
 	return store, nil
 }
 
+func (dos *DOSpace) New(ctx context.Context, name string) Blob {
+	f := NewFile(name)
+	f.Stat()
+
+	return f
+}
+
 // TODO - check for leading slash
 // TODO - check for if prefix is a directory with missing trailing slash
 func (dos *DOSpace) List(ctx context.Context, prefix string, opts ListOpts) (Blobs, error) {
@@ -80,22 +87,39 @@ func (dos *DOSpace) Stat(ctx context.Context, name string) (*Stat, error) {
 		Size:         info.Size,
 		ETag:         info.ETag,
 	}
+
 	return stat, nil
 }
 
-func (dos *DOSpace) Put(ctx context.Context, name string, data io.ReadCloser) error {
+func (dos *DOSpace) Put(ctx context.Context, name string, blob Blob) error {
+	stat, err := blob.Stat()
+	if err != nil {
+		return err
+	}
+
+	n, err := dos.client.PutObjectWithContext(ctx, dos.space, name, blob, stat.Size, minio.PutObjectOptions{
+		ContentType: stat.ContentType,
+	})
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Successfully uploaded bytes: ", n)
 	return nil
 }
 
-func (dos *DOSpace) Get(ctx context.Context, name string) (io.Reader, error) {
-	return nil, nil
-}
+func (dos *DOSpace) Get(ctx context.Context, name string, blob Blob) error {
+	object, err := dos.client.GetObjectWithContext(ctx, dos.space, name, minio.GetObjectOptions{})
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
 
-func (dos *DOSpace) Sync(ctx context.Context, from Blob, to string, opts SyncOpts) error {
-	return nil
-}
+	if _, err = io.Copy(blob, object); err != nil {
+		fmt.Println(err)
+		return err
+	}
 
-func (dos *DOSpace) SyncList(ctx context.Context, list Blobs, to string, opts SyncListOpts) error {
 	return nil
 }
 

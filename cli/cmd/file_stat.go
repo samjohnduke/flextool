@@ -47,12 +47,12 @@ var statCmd = &cobra.Command{
 		}
 
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		stat, err := fs.Stat(context.Background(), p)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		fmt.Printf("%+v\n", stat)
