@@ -163,17 +163,61 @@ func (store *Filesystem) Stat(ctx context.Context, name string) (*Stat, error) {
 }
 
 func (store *Filesystem) Put(ctx context.Context, name string, blob Blob) error {
+	fd, err := os.Open(name)
+	if err != nil {
+		return err
+	}
+
+	if _, err = io.Copy(fd, blob); err != nil {
+		fmt.Println(err)
+		return err
+	}
+
 	return nil
 }
 
 func (store *Filesystem) Get(ctx context.Context, name string, blob Blob) error {
+	fd, err := os.Open(name)
+	if err != nil {
+		return err
+	}
+
+	if _, err = io.Copy(blob, fd); err != nil {
+		fmt.Println(err)
+		return err
+	}
+
 	return nil
 }
 
 func (store *Filesystem) Delete(ctx context.Context, name string) error {
+	fd, err := os.Open(name)
+	if err != nil {
+		return err
+	}
+
+	stat, err := fd.Stat()
+	if err != nil {
+		return err
+	}
+
+	if stat.IsDir() {
+		err = os.RemoveAll(name)
+	} else {
+		err = os.Remove(name)
+	}
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (store *Filesystem) Move(ctx context.Context, name string, to string) error {
+func (store *Filesystem) Move(ctx context.Context, from string, to string) error {
+	err := os.Rename(from, to)
+	if err != nil {
+		return err
+	}
 	return nil
 }

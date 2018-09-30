@@ -124,9 +124,32 @@ func (dos *DOSpace) Get(ctx context.Context, name string, blob Blob) error {
 }
 
 func (dos *DOSpace) Delete(ctx context.Context, name string) error {
+	err := dos.client.RemoveObject(dos.space, name)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (dos *DOSpace) Move(ctx context.Context, name string, to string) error {
+func (dos *DOSpace) Move(ctx context.Context, from string, to string) error {
+	src := minio.NewSourceInfo(dos.space, from, nil)
+
+	// Destination object
+	dst, err := minio.NewDestinationInfo(dos.space, to, nil, nil)
+	if err != nil {
+		return err
+	}
+
+	// Copy object call
+	err = dos.client.CopyObject(dst, src)
+	if err != nil {
+		return err
+	}
+
+	err = dos.Delete(ctx, from)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
