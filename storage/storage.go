@@ -33,7 +33,10 @@ type Blob interface {
 	Exists() bool
 	Stat() (*Stat, error)
 
-	io.ReadWriteCloser
+	io.Reader
+	io.Writer
+	io.Closer
+	io.Seeker
 }
 
 type Blobs map[string]Blob

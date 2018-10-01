@@ -41,7 +41,7 @@ func NewDOSpace(accessKey, secretKey, region, space string, secure bool) (Store,
 }
 
 func (dos *DOSpace) New(ctx context.Context, name string) Blob {
-	f := NewFile(name)
+	f := newDOBlob(name)
 	f.Stat()
 
 	return f
