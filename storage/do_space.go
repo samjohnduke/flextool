@@ -153,3 +153,7 @@ func (dos *DOSpace) Move(ctx context.Context, from string, to string) error {
 
 	return nil
 }
+
+func (dos *DOSpace) getObject(name string) (*minio.Object, error) {
+	return dos.client.GetObject(dos.space, name, minio.GetObjectOptions{})
+}
