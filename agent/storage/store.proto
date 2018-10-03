@@ -1,5 +1,10 @@
 syntax = "proto3";
 
+enum Endian {
+  LITTLE = 0;
+  BIG = 1;
+}
+
 message Blob {
   string name = 1;
 	bool isDir = 2;
@@ -48,16 +53,44 @@ message Response {
   Error err = 1;
 }
 
-message PutRequest {
+message PutPartRequest {
   string name = 1;
+  int64 len = 2;
+  int64 start = 5;
+  Endian endian = 4;
+  bytes part = 3;
 }
 
-message GetRequest {
+message PutPartResponse {
+  bool succes = 1;
+  string name = 2;
+  int64 len = 3;
+  Error err = 4;
+}
+
+message GetPartRequest {
   string name = 1;
+  int64 len = 2;
+  int64 start = 5;
+  Endian endian = 4;
+}
+
+message GetPartResponse {
+  bytes part = 1;
+  string name = 2;
+  int64 len = 3;
+  int64 start = 4;
+  Endian endian = 5;
+  Error err = 6;
 }
 
 message DeleteRequest {
   string name = 1;
+}
+
+message DeleteResponse {
+  bool success = 1;
+  Error err = 2;
 }
 
 message MoveRequest {
@@ -65,11 +98,16 @@ message MoveRequest {
   string from = 2;
 }
 
+message MoveResponse {
+  bool success = 1;
+  Error err = 2;
+}
+
 service RemoteStore {
   rpc List(ListRequest) returns (Blobs) {}
 	rpc Stat(StatRequest) returns (StatResponse) {}
-	rpc Put(PutRequest) returns (Response) {}
-	rpc Get(GetRequest) returns (Response) {}
+	rpc Put(PutPartRequest) returns (PutPartResponse) {}
+	rpc Get(GetPartRequest) returns (GetPartResponse) {}
 	rpc Delete(DeleteRequest) returns (Response) {}
 	rpc Move(MoveRequest) returns (Response) {}
 }
