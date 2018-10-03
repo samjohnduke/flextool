@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+message Blob {
+  string name = 1;
+	bool isDir = 2;
+	bool exists = 3;
+}
+
+message Blobs {
+  repeated Blob blob = 1;
+}
+
+message ListRequest {
+  string path = 1;
+  ListOpts opts = 2;
+}
+
+message ListOpts {
+  bool rescursive = 1;
+}
+
+message ListResponse {
+  Blobs blobs = 1;
+}
+
+message Stat {
+  int64 lastModified = 1;
+	string eTag = 2;
+	string contentType = 3;
+	int64 size = 4;
+}
+
+message StatRequest {
+  string name = 1;
+}
+
+message StatResponse {
+  Stat stat = 1;
+  Error err = 2;
+}
+
+message Error {
+  string message = 1;
+  string trace = 2;
+}
+
+message Response {
+  Error err = 1;
+}
+
+message PutRequest {
+  string name = 1;
+}
+
+message GetRequest {
+  string name = 1;
+}
+
+message DeleteRequest {
+  string name = 1;
+}
+
+message MoveRequest {
+  string to = 1;
+  string from = 2;
+}
+
+service RemoteStore {
+  rpc List(ListRequest) returns (Blobs) {}
+	rpc Stat(StatRequest) returns (StatResponse) {}
+	rpc Put(PutRequest) returns (Response) {}
+	rpc Get(GetRequest) returns (Response) {}
+	rpc Delete(DeleteRequest) returns (Response) {}
+	rpc Move(MoveRequest) returns (Response) {}
+}
