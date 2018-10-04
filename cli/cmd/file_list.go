@@ -3,8 +3,8 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"path"
-	"strings"
 
 	"github.com/samjohnduke/flextool/storage"
 	"github.com/spf13/cobra"
@@ -13,10 +13,18 @@ import (
 
 func init() {
 	fileCmd.AddCommand(listCmd)
-	listCmd.PersistentFlags().BoolVarP(&recursive, "recursive", "r", false, "recursively search for file")
+	listCmd.PersistentFlags().BoolVarP(&recursive, "recursive", "R", false, "recursively search for file")
 }
 
-var recursive bool
+var recursive bool  // -R
+var all bool        // -a
+var almostAll bool  // -A
+var long bool       // -l
+var withSize bool   // -s
+var sortBySize bool // -S
+var sort string     // sort=WORD
+var sortByTime bool // -T
+var sortByName bool // -X
 
 var listCmd = &cobra.Command{
 	Use:   "ls",
@@ -24,23 +32,22 @@ var listCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		root := args[0]
-		sr := strings.Split(root, "://")
 
+		u, err := url.Parse(root)
 		var driver string
 		var p string
 
-		if len(sr) == 1 {
+		if u.Scheme == "" {
 			driver = "file"
-			p = sr[0]
+
 		} else {
-			driver = sr[0]
-			p = sr[1]
+			driver = u.Scheme
 		}
+		p = u.Path
 
 		base, name := path.Split(p)
 
 		var fs storage.Store
-		var err error
 
 		switch driver {
 		case "dospace":
