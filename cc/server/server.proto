@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+service CC {
+    rpc Connect(ConnectRequest) returns (ConnectResponse) {}
+    rpc Ping(PingRequest) returns (PongResponse) {}
+    rpc Listen(CommandRequst) returns (stream CommandResposne) {}
+}

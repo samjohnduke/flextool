@@ -42,7 +42,7 @@ var doRegion string
 var doBucket string
 
 var rootCmd = &cobra.Command{
-	Use:   "flextool",
+	Use:   "fxt",
 	Short: "",
 	Long:  ``,
 }
