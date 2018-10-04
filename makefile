@@ -1,0 +1,1 @@
+go build -o fxt fxt/main.go
