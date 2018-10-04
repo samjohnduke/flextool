@@ -108,6 +108,6 @@ service RemoteStore {
 	rpc Stat(StatRequest) returns (StatResponse) {}
 	rpc Put(PutPartRequest) returns (PutPartResponse) {}
 	rpc Get(GetPartRequest) returns (GetPartResponse) {}
-	rpc Delete(DeleteRequest) returns (Response) {}
-	rpc Move(MoveRequest) returns (Response) {}
+	rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+	rpc Move(MoveRequest) returns (MoveResponse) {}
 }
