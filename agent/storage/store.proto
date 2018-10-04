@@ -104,7 +104,7 @@ message MoveResponse {
 }
 
 service RemoteStore {
-  rpc List(ListRequest) returns (Blobs) {}
+  rpc List(ListRequest) returns (ListResponse) {}
 	rpc Stat(StatRequest) returns (StatResponse) {}
 	rpc Put(PutPartRequest) returns (PutPartResponse) {}
 	rpc Get(GetPartRequest) returns (GetPartResponse) {}
