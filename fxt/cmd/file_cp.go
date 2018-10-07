@@ -13,6 +13,11 @@ func init() {
 	fileCmd.AddCommand(copyCmd)
 }
 
+var copyBackup bool          // -b
+var copyBackupVersioned bool // -B
+var copyNoClobber bool       // -n
+var copyInteractive bool     // -i
+
 var copyCmd = &cobra.Command{
 	Use:   "cp",
 	Short: "copy a file from 1 location to another",

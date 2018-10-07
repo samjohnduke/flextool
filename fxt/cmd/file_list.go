@@ -13,18 +13,18 @@ import (
 
 func init() {
 	fileCmd.AddCommand(listCmd)
-	listCmd.PersistentFlags().BoolVarP(&recursive, "recursive", "R", false, "recursively search for file")
+	listCmd.PersistentFlags().BoolVarP(&listRecursive, "recursive", "R", false, "recursively search for file")
 }
 
-var recursive bool  // -R
-var all bool        // -a
-var almostAll bool  // -A
-var long bool       // -l
-var withSize bool   // -s
-var sortBySize bool // -S
-var sort string     // sort=WORD
-var sortByTime bool // -T
-var sortByName bool // -X
+var listRecursive bool  // -R
+var listAll bool        // -a
+var listAlmostAll bool  // -A
+var listLong bool       // -l
+var listWithSize bool   // -s
+var listSortBySize bool // -S
+var listSort string     // sort=WORD
+var listSortByTime bool // -T
+var listSortByName bool // -X
 
 var listCmd = &cobra.Command{
 	Use:   "ls",
@@ -67,7 +67,7 @@ var listCmd = &cobra.Command{
 		}
 
 		files, err := fs.List(context.Background(), name, storage.ListOpts{
-			Recursive: recursive,
+			Recursive: listRecursive,
 		})
 		if err != nil {
 			panic(err)

@@ -14,6 +14,11 @@ func init() {
 	fileCmd.AddCommand(removeCmd)
 }
 
+var removePreserveRoot bool     // -p
+var removeRecursive bool        // -R
+var removeEmptyDirectories bool // -d
+var removeInteractive bool      // -i
+
 var removeCmd = &cobra.Command{
 	Use:   "rm",
 	Short: "delete a file",

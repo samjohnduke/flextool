@@ -14,6 +14,17 @@ func init() {
 	fileCmd.AddCommand(syncCmd)
 }
 
+var syncChecksum bool        // -c
+var syncUpdate bool          // -u (skip if dest is newer)
+var syncDir bool             // -d (update only dir, not recursive)
+var syncDry bool             // --dry
+var syncDelete bool          // --delete
+var syncFilterPattern string // --filter -f
+var syncFilterFile string    // --filter-file -F
+var syncStats bool           // --stats
+var syncHumanReadable bool   // -h
+var syncProgress bool        // -p
+
 var syncCmd = &cobra.Command{
 	Use:   "sync",
 	Short: "delete a file",
