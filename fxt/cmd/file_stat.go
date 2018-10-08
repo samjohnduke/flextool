@@ -13,7 +13,10 @@ import (
 
 func init() {
 	fileCmd.AddCommand(statCmd)
+	statCmd.PersistentFlags().BoolVarP(&statHuman, "human", "h", false, "print using human readable sizes eg. 1.2Gb")
 }
+
+var statHuman bool // -h
 
 var statCmd = &cobra.Command{
 	Use:   "stat",

@@ -11,6 +11,10 @@ import (
 
 func init() {
 	fileCmd.AddCommand(copyCmd)
+	copyCmd.PersistentFlags().BoolVarP(&copyBackup, "backup", "b", false, "backup duplicate files before copying")
+	copyCmd.PersistentFlags().BoolVarP(&copyBackupVersioned, "version", "B", false, "backup files with a file version number")
+	copyCmd.PersistentFlags().BoolVarP(&copyNoClobber, "clobber", "c", true, "overwrite files if they exist")
+	copyCmd.PersistentFlags().BoolVarP(&copyInteractive, "interactive", "i", false, "copy files in interactive mode")
 }
 
 var copyBackup bool          // -b
