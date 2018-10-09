@@ -1,6 +1,6 @@
 package main
 
-import "github.com/samjohnduke/flextool/cli/cmd"
+import "github.com/samjohnduke/flextool/fxt/cmd"
 
 func main() {
 	cmd.Execute()

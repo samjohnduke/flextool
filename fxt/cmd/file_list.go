@@ -19,10 +19,10 @@ func init() {
 	listCmd.PersistentFlags().BoolVarP(&listLong, "long", "l", false, "list files with complete details")
 	listCmd.PersistentFlags().BoolVarP(&listWithSize, "with-size", "s", false, "show file size")
 	listCmd.PersistentFlags().BoolVarP(&listHuman, "human", "h", false, "show numbers in human readable format eg 1.2Gb")
-	listCmd.PersistentFlags().BoolVarP(&listSortBySize, "sort-size", "-S", false, "sort files by size")
+	listCmd.PersistentFlags().BoolVarP(&listSortBySize, "sort-size", "S", false, "sort files by size")
 	listCmd.PersistentFlags().StringVar(&listSort, "sort", "", "sort by ${WORD}")
-	listCmd.PersistentFlags().BoolVarP(&listSortByTime, "sort-time", "-T", false, "sort by time")
-	listCmd.PersistentFlags().BoolVarP(&listSortByName, "sort-name", "-X", false, "sort by file name")
+	listCmd.PersistentFlags().BoolVarP(&listSortByTime, "sort-time", "T", false, "sort by time")
+	listCmd.PersistentFlags().BoolVarP(&listSortByName, "sort-name", "X", false, "sort by file name")
 }
 
 var listRecursive bool  // -R
