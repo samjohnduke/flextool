@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net/url"
 	"os"
@@ -32,6 +33,7 @@ var copyCmd = &cobra.Command{
 	Short: "copy a file from 1 location to another",
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
+		// Load to and from paths as a URI
 		from, err := url.Parse(args[0])
 		if err != nil {
 			log.Fatal(err)
@@ -42,6 +44,8 @@ var copyCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
+		// If no driver is specified in the URI it means we are working with a
+		// local filesytem path
 		var fromDriver string
 		if from.Scheme == "" {
 			fromDriver = "file"
@@ -56,9 +60,11 @@ var copyCmd = &cobra.Command{
 			toDriver = from.Scheme
 		}
 
+		// Get the path that we are working with
 		fromPath := from.Path
 		toPath := to.Path
 
+		// Load the Driver that we can use to copy with
 		fromFS, err := getDriver(fromDriver, fromPath)
 		if err != nil {
 			log.Fatal(err)
@@ -69,10 +75,10 @@ var copyCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		toStat, err := fromFS.Stat(context.TODO(), fromPath)
+		// Determine if the copy from file/dir exists
+		_, err = fromFS.Stat(context.TODO(), "")
 		var fromExists bool = true
 		if err != nil {
-			log.Println(err)
 			if os.IsNotExist(err) {
 				fromExists = false
 			} else {
@@ -80,18 +86,19 @@ var copyCmd = &cobra.Command{
 			}
 		}
 
-		log.Println(toStat)
-
-		_, err = toFS.Stat(context.TODO(), toPath)
+		// Determine if the copy to file/dir exists
+		_, err = toFS.Stat(context.TODO(), "")
 		var toExists bool
 		if err != nil {
 			if os.IsNotExist(err) {
 				toExists = false
 			} else {
+
 				log.Fatal(err)
 			}
 		}
 
+		// Exit early if there is nothing to copy
 		if !fromExists {
 			fmt.Printf("file %s does not exist\n", fromPath)
 			return
@@ -101,23 +108,33 @@ var copyCmd = &cobra.Command{
 			// handle clobber / backup / versioning
 		}
 
+		// Load up the blob for copying from
 		fromBlob := fromFS.New(context.TODO(), "")
-		if err != nil {
-			log.Fatal(err)
-		}
 
+		// If the copy from blob is a directory but we aren't allowed to copy
+		// exit early and print a short message to say how to copy the dir
 		if fromBlob.IsDir() && !copyRescursive {
 			fmt.Printf("file %s is a directory. use -r to copy recursively\n", fromPath)
 			return
 		}
-
+		// Do the copy as we now now everything that need to start
 		if fromBlob.IsDir() {
 
+		} else {
+			toBlob := fromFS.New(context.TODO(), "")
+			fromBlob.(*storage.File).EnsureReadable()
+			toBlob.(*storage.File).EnsureWriteable()
+			log.Println(fromBlob, toBlob)
+			bytes, err := io.Copy(toBlob, fromBlob)
+			if err != nil {
+				panic(err)
+			}
+
+			toBlob.Close()
+			fromBlob.Close()
+
+			log.Println("copied bytes:", bytes)
 		}
-
-		log.Println(fromExists, toExists)
-
-		log.Println(fromFS, toFS)
 	},
 }
 

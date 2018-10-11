@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path"
 )
@@ -44,11 +45,12 @@ func (f *File) Exists() bool {
 }
 
 func (f *File) Stat() (*Stat, error) {
-	stat := &Stat{}
 	fd, err := os.Open(path.Join(f.path, f.name))
 	if err != nil {
 		return nil, err
 	}
+
+	stat := &Stat{}
 
 	fstat, err := fd.Stat()
 	if err != nil {
@@ -74,6 +76,7 @@ func (f *File) Read(p []byte) (n int, err error) {
 }
 
 func (f *File) Write(p []byte) (n int, err error) {
+	log.Printf("Writing bytes: %d\n", len(p))
 	return f.fd.Write(p)
 }
 
@@ -83,4 +86,36 @@ func (f *File) Close() error {
 
 func (f *File) Seek(offset int64, whence int) (int64, error) {
 	return f.fd.Seek(offset, whence)
+}
+
+func (f *File) EnsureReadable() error {
+	if f.fd != nil {
+		return nil
+	}
+
+	fd, err := os.Open(path.Join(f.path, f.name))
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	f.fd = fd
+
+	return nil
+}
+
+func (f *File) EnsureWriteable() error {
+	if f.fd != nil {
+		return nil
+	}
+
+	fd, err := os.Create(path.Join(f.path, f.name))
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	f.fd = fd
+
+	return nil
 }

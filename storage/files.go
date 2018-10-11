@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -25,7 +26,9 @@ func NewFilesystem(root string) (Store, error) {
 }
 
 func (store *Filesystem) New(ctx context.Context, name string) Blob {
-	f := newFile(name)
+	log.Println(name)
+	f := newFile(path.Join(store.root, name))
+
 	f.Stat()
 
 	return f
