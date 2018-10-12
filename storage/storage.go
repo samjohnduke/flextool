@@ -24,6 +24,8 @@ type SyncListOpts struct {
 
 type ListOpts struct {
 	Recursive bool
+	All       bool
+	AlmostAll bool
 }
 
 type Blob interface {

@@ -6,7 +6,7 @@ import (
 	"io"
 	"log"
 	"net/url"
-	"os"
+	"path"
 
 	"github.com/samjohnduke/flextool/storage"
 	"github.com/spf13/cobra"
@@ -44,72 +44,34 @@ var copyCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		// If no driver is specified in the URI it means we are working with a
-		// local filesytem path
-		var fromDriver string
-		if from.Scheme == "" {
-			fromDriver = "file"
-		} else {
-			fromDriver = from.Scheme
-		}
-
-		var toDriver string
-		if to.Scheme == "" {
-			toDriver = "file"
-		} else {
-			toDriver = from.Scheme
-		}
-
 		// Get the path that we are working with
-		fromPath := from.Path
-		toPath := to.Path
+		fromPath, fromName := path.Split(from.Path)
+		toPath, toName := path.Split(to.Path)
 
 		// Load the Driver that we can use to copy with
-		fromFS, err := getDriver(fromDriver, fromPath)
+		fromFS, err := getDriver(from.Scheme, fromPath)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		toFS, err := getDriver(toDriver, toPath)
+		toFS, err := getDriver(to.Scheme, toPath)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		// Determine if the copy from file/dir exists
-		_, err = fromFS.Stat(context.TODO(), "")
-		var fromExists bool = true
-		if err != nil {
-			if os.IsNotExist(err) {
-				fromExists = false
-			} else {
-				log.Fatal(err)
-			}
-		}
-
-		// Determine if the copy to file/dir exists
-		_, err = toFS.Stat(context.TODO(), "")
-		var toExists bool
-		if err != nil {
-			if os.IsNotExist(err) {
-				toExists = false
-			} else {
-
-				log.Fatal(err)
-			}
-		}
+		// Load up the blob for copying to and from
+		fromBlob := fromFS.New(context.TODO(), fromName)
+		toBlob := toFS.New(context.TODO(), toName)
 
 		// Exit early if there is nothing to copy
-		if !fromExists {
+		if !fromBlob.Exists() {
 			fmt.Printf("file %s does not exist\n", fromPath)
 			return
 		}
 
-		if toExists {
+		if toBlob.Exists() {
 			// handle clobber / backup / versioning
 		}
-
-		// Load up the blob for copying from
-		fromBlob := fromFS.New(context.TODO(), "")
 
 		// If the copy from blob is a directory but we aren't allowed to copy
 		// exit early and print a short message to say how to copy the dir
@@ -121,19 +83,13 @@ var copyCmd = &cobra.Command{
 		if fromBlob.IsDir() {
 
 		} else {
-			toBlob := fromFS.New(context.TODO(), "")
-			fromBlob.(*storage.File).EnsureReadable()
-			toBlob.(*storage.File).EnsureWriteable()
-			log.Println(fromBlob, toBlob)
-			bytes, err := io.Copy(toBlob, fromBlob)
+			_, err := io.Copy(toBlob, fromBlob)
 			if err != nil {
 				panic(err)
 			}
 
 			toBlob.Close()
 			fromBlob.Close()
-
-			log.Println("copied bytes:", bytes)
 		}
 	},
 }

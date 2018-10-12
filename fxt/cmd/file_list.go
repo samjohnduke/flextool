@@ -3,8 +3,11 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/url"
 	"path"
+	"sort"
+	"time"
 
 	"github.com/samjohnduke/flextool/storage"
 	"github.com/spf13/cobra"
@@ -18,11 +21,11 @@ func init() {
 	listCmd.PersistentFlags().BoolVarP(&listAlmostAll, "almost-all", "A", false, "show all except . and ..")
 	listCmd.PersistentFlags().BoolVarP(&listLong, "long", "l", false, "list files with complete details")
 	listCmd.PersistentFlags().BoolVarP(&listWithSize, "with-size", "s", false, "show file size")
-	listCmd.PersistentFlags().BoolVarP(&listHuman, "human", "h", false, "show numbers in human readable format eg 1.2Gb")
+	listCmd.PersistentFlags().BoolVarP(&listHuman, "human", "H", false, "show numbers in human readable format eg 1.2Gb")
 	listCmd.PersistentFlags().BoolVarP(&listSortBySize, "sort-size", "S", false, "sort files by size")
 	listCmd.PersistentFlags().StringVar(&listSort, "sort", "", "sort by ${WORD}")
 	listCmd.PersistentFlags().BoolVarP(&listSortByTime, "sort-time", "T", false, "sort by time")
-	listCmd.PersistentFlags().BoolVarP(&listSortByName, "sort-name", "X", false, "sort by file name")
+	listCmd.PersistentFlags().BoolVarP(&listSortByName, "sort-name", "X", true, "sort by file name")
 }
 
 var listRecursive bool  // -R
@@ -38,28 +41,21 @@ var listSortByName bool // -X
 
 var listCmd = &cobra.Command{
 	Use:   "ls",
-	Short: "show all the files in the application",
+	Short: "show all the files at the specified URI",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		root := args[0]
 
 		u, err := url.Parse(root)
-		var driver string
-		var p string
-
-		if u.Scheme == "" {
-			driver = "file"
-
-		} else {
-			driver = u.Scheme
+		if err != nil {
+			log.Fatal(err)
 		}
-		p = u.Path
 
-		base, name := path.Split(p)
+		base, name := path.Split(u.Path)
 
 		var fs storage.Store
 
-		switch driver {
+		switch u.Scheme {
 		case "dospace":
 			fs, err = storage.NewDOSpace(
 				viper.Get("do_space.access_key").(string),
@@ -78,13 +74,70 @@ var listCmd = &cobra.Command{
 
 		files, err := fs.List(context.Background(), name, storage.ListOpts{
 			Recursive: listRecursive,
+			All:       listAll,
+			AlmostAll: listAlmostAll,
 		})
 		if err != nil {
 			panic(err)
 		}
 
+		var fbs []storage.Blob
 		for _, r := range files {
-			fmt.Println(path.Join(r.Name()))
+			fbs = append(fbs, r)
+		}
+
+		sortBlobsByName(fbs)
+
+		for _, r := range fbs {
+			fmt.Println(r.Name())
 		}
 	},
+}
+
+func sortBlobsByName(bs []storage.Blob) {
+	sort.Slice(bs, func(i, j int) bool {
+		return bs[i].Name() < bs[j].Name()
+	})
+}
+
+func sortBlobsBySize(bs []storage.Blob) {
+	sort.Slice(bs, func(i, j int) bool {
+		var o, t int64
+		s1, _ := bs[i].Stat()
+		if s1 == nil {
+			o = 0
+		} else {
+			o = s1.Size
+		}
+
+		s2, _ := bs[j].Stat()
+		if s2 == nil {
+			t = 0
+		} else {
+			t = s2.Size
+		}
+
+		return o < t
+	})
+}
+
+func sortBlobsByTime(bs []storage.Blob) {
+	sort.Slice(bs, func(i, j int) bool {
+		var o, t time.Time
+		s1, _ := bs[i].Stat()
+		if s1 == nil {
+			o = time.Now()
+		} else {
+			o = s1.LastModified
+		}
+
+		s2, _ := bs[j].Stat()
+		if s2 == nil {
+			t = time.Now()
+		} else {
+			t = s2.LastModified
+		}
+
+		return o.After(t)
+	})
 }

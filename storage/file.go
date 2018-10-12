@@ -10,11 +10,14 @@ import (
 )
 
 type File struct {
-	name   string
-	path   string
-	isDir  bool
-	loaded bool
-	fd     *os.File
+	name        string
+	path        string
+	isDir       bool
+	exists      bool
+	loaded      bool
+	inReadMode  bool
+	inWriteMode bool
+	fd          *os.File
 }
 
 func newFile(name string) *File {
@@ -25,6 +28,7 @@ func newFile(name string) *File {
 		name:   n,
 		isDir:  false,
 		loaded: false,
+		exists: false,
 	}
 }
 
@@ -41,12 +45,15 @@ func (f *File) IsDir() bool {
 }
 
 func (f *File) Exists() bool {
-	return false
+	return f.exists
 }
 
 func (f *File) Stat() (*Stat, error) {
 	fd, err := os.Open(path.Join(f.path, f.name))
 	if err != nil {
+		if os.IsNotExist(err) {
+			f.exists = false
+		}
 		return nil, err
 	}
 
@@ -72,15 +79,19 @@ func (f *File) Stat() (*Stat, error) {
 }
 
 func (f *File) Read(p []byte) (n int, err error) {
+	f.ensureReadable()
 	return f.fd.Read(p)
 }
 
 func (f *File) Write(p []byte) (n int, err error) {
-	log.Printf("Writing bytes: %d\n", len(p))
 	return f.fd.Write(p)
 }
 
 func (f *File) Close() error {
+	if f.fd == nil {
+		return nil
+	}
+
 	return f.fd.Close()
 }
 
@@ -88,7 +99,7 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 	return f.fd.Seek(offset, whence)
 }
 
-func (f *File) EnsureReadable() error {
+func (f *File) ensureReadable() error {
 	if f.fd != nil {
 		return nil
 	}
@@ -100,12 +111,14 @@ func (f *File) EnsureReadable() error {
 	}
 
 	f.fd = fd
+	f.inReadMode = true
+	f.loaded = true
 
 	return nil
 }
 
 func (f *File) EnsureWriteable() error {
-	if f.fd != nil {
+	if f.fd != nil && f.inWriteMode {
 		return nil
 	}
 
@@ -116,6 +129,7 @@ func (f *File) EnsureWriteable() error {
 	}
 
 	f.fd = fd
-
+	f.inWriteMode = true
+	f.loaded = true
 	return nil
 }
