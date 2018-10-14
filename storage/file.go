@@ -84,6 +84,7 @@ func (f *File) Read(p []byte) (n int, err error) {
 }
 
 func (f *File) Write(p []byte) (n int, err error) {
+	f.ensureWriteable()
 	return f.fd.Write(p)
 }
 
@@ -117,7 +118,7 @@ func (f *File) ensureReadable() error {
 	return nil
 }
 
-func (f *File) EnsureWriteable() error {
+func (f *File) ensureWriteable() error {
 	if f.fd != nil && f.inWriteMode {
 		return nil
 	}

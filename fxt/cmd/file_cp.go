@@ -17,14 +17,14 @@ func init() {
 	fileCmd.AddCommand(copyCmd)
 	copyCmd.PersistentFlags().BoolVarP(&copyBackup, "backup", "b", false, "backup duplicate files before copying")
 	copyCmd.PersistentFlags().BoolVarP(&copyBackupVersioned, "version", "B", false, "backup files with a file version number")
-	copyCmd.PersistentFlags().BoolVarP(&copyNoClobber, "clobber", "c", true, "overwrite files if they exist")
+	copyCmd.PersistentFlags().BoolVarP(&copyClobber, "clobber", "c", false, "overwrite files if they exist")
 	copyCmd.PersistentFlags().BoolVarP(&copyInteractive, "interactive", "i", false, "copy files in interactive mode")
 	copyCmd.PersistentFlags().BoolVarP(&copyRescursive, "recursive", "r", false, "copy files recursively")
 }
 
 var copyBackup bool          // -b
 var copyBackupVersioned bool // -B
-var copyNoClobber bool       // -n
+var copyClobber bool         // -n
 var copyInteractive bool     // -i
 var copyRescursive bool      // -r
 
@@ -69,8 +69,12 @@ var copyCmd = &cobra.Command{
 			return
 		}
 
-		if toBlob.Exists() {
+		if toBlob.Exists() && copyClobber {
 			// handle clobber / backup / versioning
+		} else if toBlob.Exists() && !copyClobber {
+			// the dest exists but we aren't allowed to overwrite it
+			fmt.Printf("file %s exists but clobber is not allowed. use -c to overwrite", toPath)
+			return
 		}
 
 		// If the copy from blob is a directory but we aren't allowed to copy
